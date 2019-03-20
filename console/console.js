@@ -72,7 +72,7 @@ function listCartridges(){
 	if (cartridges.length === 0){
 		return 'No game cartridges found.'
 	}
-	var cartridgesFormated = 'Available Games: \n';
+	var cartridgesFormated = 'Available Games (Type name of game you would like to play): \n';
 	for(var i = 0; i < cartridges.length; i++){
 		cartridgesFormated = cartridgesFormated.concat(cartridges[i].substr(0,cartridges[i].lastIndexOf('.')));
 		if(i < cartridges.length-1){

@@ -4,3 +4,7 @@ logs
 
 # Dependency directory
 node_modules
+
+
+# ignore mac osx files
+.DS_Store
