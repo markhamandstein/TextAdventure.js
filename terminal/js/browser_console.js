@@ -31,94 +31,47 @@ _.extend = function(obj) {
 };
 
 // ############################################################
-// all game commands
+// create game command object to be put on window
 // 
-// might want to split these commands up into more readable objects
-// could group them with alias options
 
-var main_conmmands = {
-  	get die() {
-		requestGameInfo('die');
-    	return "die";
-  	},
-  	get drop() {
-		requestGameInfo('drop');
-    	return "drop";
-  	},
-  	get inventory() {
-		requestGameInfo('inventory');
-    	return "inventory";
-  	},
-  	get look() {
-		requestGameInfo('look');
-    	return "look";
-  	},
-  	get take() {
-		requestGameInfo('take');
-    	return "take";
-  	},
-  	get use() {
-		requestGameInfo('use');
-    	return "use";
-  	},
-  	get restart(){
-  		// need to clean up this restart function
-  		// will need to add it to the api
-  		// its currently calling it twice
-  		requestGameInfo('die');
-  		requestGameInfo('get games');
-  	}
+function create_command_obj(command, directive){
+	var full_command = directive + " " + command;
+		full_command = full_command.trim();
+
+	return {
+		get [command]() {
+	  		requestGameInfo(full_command);
+	  		return full_command; 
+		}
+	}
 }
 
-var view = {
-	get helmet() {
-		requestGameInfo('look helmets');
-    	return "Look at Helmet";
-  	},
-  	get notes() {
-		requestGameInfo('look note');
-    	return "Look at Note";
-  	},
-  	get sign() {
-		requestGameInfo('look sign');
-    	return "Look at Sign";
-  	},
+// ############################################################
+// create game objects to be placed on the window
+// 
+
+function create_window_commands(commands, directive){
+	for (let command of commands) {
+		const command_object = create_command_obj(command, directive);
+		const descriptor = Object.getOwnPropertyDescriptor(command_object, command);
+        Object.defineProperty(window, command, descriptor);
+	}
 }
 
-var take = {
-	get helmet() {
-		requestGameInfo('take helmet');
-    	return "Take Helmet";
-  	}
-}
+// ############################################################
+// create game objects (action.object)
+// 
 
-var use = {
-	get helmet() {
-		requestGameInfo('use helmet');
-    	return "Use Helmet";
-  	}
-}
+function create_interactive_objects(commands, directive){
+	let interactive_object = {};
 
-var exits = {
-	get inside() {
-		requestGameInfo('go inside');
-    	return "Inside";
-  	},
-  	get outside(){
-  		requestGameInfo('go Outside');
-    	return "Outside";
-  	},
-  	get deeper(){
-  		requestGameInfo('go Deeper');
-    	return "Deeper";
-  	}
-}
+	for (let command of commands) {
+		const command_object = create_command_obj(command, directive);
+		const descriptor = Object.getOwnPropertyDescriptor(command_object, command);
+        Object.defineProperty(interactive_object, command, descriptor);
+	}
 
-var games = {
-	get gold_mine() {
-		requestGameInfo('load gold_mine');
-    	return "load gold_mine";
-  	},
+	return interactive_object;
 }
 
 // ############################################################
@@ -136,13 +89,28 @@ function requestGameInfo(gameCommand){
 }
 
 // ############################################################
-// game commands
+// all game commands
 // 
 
-_.extend(window, main_conmmands, games, exits);
+// gold game
+const game_commands 		= ['die', 'restart', 'inventory' ];
+const game_views 			= ['helmets', 'note', 'sign' ];
+const game_take 			= ['helmet'];
+const game_use 				= ['helmet'];
+const game_exits 			= ['inside', 'outside', 'Deeper'];
+const game_cartridges 		= ['gold_mine'];
+
+create_window_commands(game_commands, '');
+create_window_commands(game_cartridges, 'load');
+create_window_commands(game_exits, 'go');
+
+const look = create_interactive_objects(game_views, 'look');
+const take = create_interactive_objects(game_take, 'take');
+const use = create_interactive_objects(game_use, 'use');
+const drop = create_interactive_objects(game_take, 'drop');
 
 // init game
-main_conmmands.restart;
+requestGameInfo('get games');
 
 
 
@@ -153,17 +121,31 @@ main_conmmands.restart;
 // TO DO
 // 
 
+// 1
 // Setup demo working in a web page being served by Apache
 // Express is an API
 
+// 2
+// - need to create a restart for the api
+ 
+// 3
 // - create a statement that tells you all the current commands
 // - have this triggered at the start
+
+// 4
+// clean up code for object creation
+
+
 
 // - certain rooms might need to load objects into console window prop
 // - same as above, but with items in inventory
 
 // - game needs an end screen
 // - maybe game over ascii
+// 
+
+// - game needs a start screen
+// - ascii logo
 
 // - need some aliasing for plural commands
 // - maybe have warning message of what the commands are
