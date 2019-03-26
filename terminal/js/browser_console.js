@@ -1,76 +1,51 @@
 // ############################################################
-// _. - utlity object
-// 
-// _.extend -  mixin function for objects 
-// 
-// can mixin multiple objects
-// 
 // Object.getOwnPropertyDescriptor() - get props of object without using prototype chain.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor
 // 
 // Object.defineProperty()
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
 
-var _ = {};
-
-_.extend = function(obj) {
-    Array.prototype.slice.call(arguments, 1).forEach(function(source) {
-
-        var descriptor, prop;
-
-        if (source) {
-            for (prop in source) {
-            	
-                descriptor = Object.getOwnPropertyDescriptor(source, prop);
-                // create new object with new props
-                Object.defineProperty(obj, prop, descriptor);
-            }
-        }
-    });
-    return obj;
-};
 
 // ############################################################
-// create game command object to be put on window
+// create game command object
 // 
 
 function create_command_obj(command, directive){
-	var full_command = directive + " " + command;
-		full_command = full_command.trim();
-
 	return {
 		get [command]() {
-	  		requestGameInfo(full_command);
-	  		return full_command; 
+	  		requestGameInfo(directive);
+	  		return directive; 
 		}
 	}
 }
 
 // ############################################################
-// create game objects to be placed on the window
+// create single commands
 // 
 
-function create_window_commands(commands, directive){
-	for (let command of commands) {
+function create_single_command(commands){
+	const entries = Object.entries(commands);
+	for (const [command, directive] of entries) {
 		const command_object = create_command_obj(command, directive);
 		const descriptor = Object.getOwnPropertyDescriptor(command_object, command);
-        Object.defineProperty(window, command, descriptor);
+  		Object.defineProperty(window, command, descriptor);
 	}
 }
 
 // ############################################################
-// create game objects (action.object)
+// create interactive commands (action.object)
 // 
 
-function create_interactive_objects(commands, directive){
+function create_interactive_commands(commands){
 	let interactive_object = {};
 
-	for (let command of commands) {
+	const entries = Object.entries(commands);
+
+	for (const [command, directive] of entries) {
 		const command_object = create_command_obj(command, directive);
 		const descriptor = Object.getOwnPropertyDescriptor(command_object, command);
-        Object.defineProperty(interactive_object, command, descriptor);
+  		Object.defineProperty(interactive_object, command, descriptor);
 	}
-
 	return interactive_object;
 }
 
@@ -92,22 +67,32 @@ function requestGameInfo(gameCommand){
 // all game commands
 // 
 
-// gold game
-const game_commands 		= ['die', 'restart', 'inventory' ];
-const game_views 			= ['helmets', 'note', 'sign' ];
-const game_take 			= ['helmet'];
-const game_use 				= ['helmet'];
-const game_exits 			= ['inside', 'outside', 'Deeper'];
-const game_cartridges 		= ['gold_mine'];
+// single commands
+const game_commands 	= { 'die' : 'die',
+					 		'restart': 'restart',
+					 		'inventory' : 'inventory' };
 
-create_window_commands(game_commands, '');
-create_window_commands(game_cartridges, 'load');
-create_window_commands(game_exits, 'go');
+create_single_command(game_commands);
 
-const look = create_interactive_objects(game_views, 'look');
-const take = create_interactive_objects(game_take, 'take');
-const use = create_interactive_objects(game_use, 'use');
-const drop = create_interactive_objects(game_take, 'drop');
+// interactive commands
+const game_cartridges 	= { 'goldmine' : 'load gold_mine' };
+const game_views 		= { 'around' : 'look',
+					 		'helmets': 'look helmets',
+					 		'note'   : 'look note',
+					 		'sign'   : 'look sign' };
+const game_take			= { 'helmet' : 'take helmet' };
+const game_use 	 		= { 'helmet' : 'use helmet' };
+const game_drop 		= { 'helmet' : 'drop helmet' };
+const game_exits 		= { 'inside' : 'go inside',
+					 		'outside': 'go outside',
+					 		'Deeper' : 'go Deeper' };
+
+const look = create_interactive_commands(game_views);
+const take = create_interactive_commands(game_take);
+const use = create_interactive_commands(game_use);
+const drop = create_interactive_commands(game_drop);
+const go = create_interactive_commands(game_exits);
+const load = create_interactive_commands(game_cartridges);
 
 // init game
 requestGameInfo('get games');
@@ -132,18 +117,12 @@ requestGameInfo('get games');
 // - create a statement that tells you all the current commands
 // - have this triggered at the start
 
-// 4
-// clean up code for object creation
-
-
-
 // - certain rooms might need to load objects into console window prop
 // - same as above, but with items in inventory
 
 // - game needs an end screen
 // - maybe game over ascii
 // 
-
 // - game needs a start screen
 // - ascii logo
 
@@ -153,8 +132,7 @@ requestGameInfo('get games');
 // - have it print out how many commands it took you to win
 // - what is the least amount of moves it takes
 
-
-
+// - Delay loading of game to ensure its after errors could be on the console
 
 
 
